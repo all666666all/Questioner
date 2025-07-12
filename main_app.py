@@ -126,7 +126,9 @@ class KnowledgeAssessmentApp:
             "feedback": result.get("feedback", ""),
             "is_correct": result.get("is_correct", False),
             "progress": result.get("progress", 0),
-            "completed": result.get("domain_completed", False)
+            "domain_complete": result.get("domain_complete", False),
+            "confidence_quality": result.get("confidence_quality", 0.0),
+            "current_difficulty": result.get("current_difficulty", 50)
         }
         
         if result.get("next_question"):

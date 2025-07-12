@@ -98,14 +98,17 @@ class QuestionFlowManager:
         if is_correct:
             self.current_domain_assessment.questions_correct += 1
         
-        self.confidence_metrics.add_data_point(confidence, is_correct)
+        # Calculate system-determined confidence
+        system_confidence = self.difficulty_engine.calculate_system_confidence(is_correct, response_time)
         
-        self.difficulty_engine.update_difficulty(is_correct, response_time, confidence)
+        self.confidence_metrics.add_data_point(system_confidence, is_correct)
+        
+        self.difficulty_engine.update_difficulty(is_correct, response_time, system_confidence)
         
         self.current_domain_assessment.current_difficulty = int(self.difficulty_engine.current_difficulty)
         
         progress_increment = self.calculate_enhanced_progress_increment(
-            is_correct, confidence, self.current_question.difficulty_level, response_time
+            is_correct, system_confidence, self.current_question.difficulty_level, response_time
         )
         
         self.domain_progress += progress_increment
@@ -126,7 +129,7 @@ class QuestionFlowManager:
         self.current_domain_assessment.confidence_score = self.confidence_metrics.get_confidence_quality_score()
         
         feedback = self.generate_enhanced_answer_feedback(
-            is_correct, self.current_question.explanation, confidence
+            is_correct, self.current_question.explanation, system_confidence
         )
         
         result = {
@@ -138,7 +141,9 @@ class QuestionFlowManager:
             "confidence_quality": self.confidence_metrics.get_confidence_quality_score(),
             "current_difficulty": self.difficulty_engine.current_difficulty,
             "domain_complete": False,
-            "next_question": None
+            "next_question": None,
+            "response_time": response_time,
+            "knowledge_tag": self.current_question.knowledge_tag
         }
         
         if self.domain_progress >= 100.0:
