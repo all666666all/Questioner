@@ -372,3 +372,39 @@ class ImprovedAdaptiveDifficultyEngine:
             return 1.3
         else:
             return 1.0
+    
+    def calculate_system_confidence(self, is_correct: bool, response_time: float) -> float:
+        """
+        Calculate system-determined confidence based on response patterns and timing.
+        This replaces user-input confidence with intelligent system calculation.
+        """
+        base_confidence = 0.5
+        
+        if is_correct:
+            base_confidence += 0.3
+        else:
+            base_confidence -= 0.2
+        
+        expected_time = 30.0 + (self.current_difficulty / 100) * 30.0
+        time_ratio = response_time / expected_time
+        
+        if is_correct and time_ratio < 0.7:
+            base_confidence += 0.2
+        elif is_correct and time_ratio > 1.5:
+            base_confidence -= 0.1
+        elif not is_correct and time_ratio < 0.5:
+            base_confidence -= 0.2
+        
+        if self.consecutive_correct >= 3:
+            base_confidence += 0.1
+        elif self.consecutive_incorrect >= 2:
+            base_confidence -= 0.1
+        
+        if len(self.recent_performance) >= 3:
+            recent_accuracy = sum(self.recent_performance[-3:]) / 3
+            if recent_accuracy > 0.8 and self.current_difficulty < 70:
+                base_confidence += 0.1
+            elif recent_accuracy < 0.4 and self.current_difficulty > 50:
+                base_confidence -= 0.1
+        
+        return max(0.1, min(0.9, base_confidence))

@@ -9,13 +9,15 @@ from models import AssessmentDomain, Question
 class AIService:
     def __init__(self):
         self.api_key = CONFIG["openai"]["api_key"]
-        self.model = CONFIG["openai"]["model"]
+        
+        self.model = "gpt-4o"
         self.temperature = CONFIG["openai"]["temperature"]
         self.max_tokens = CONFIG["openai"]["max_tokens"]
         
         if self.api_key and self.api_key.startswith("sk-"):
             self.client = openai.OpenAI(api_key=self.api_key)
             self.use_mock = False
+            print("OpenAI client initialized successfully with GPT-4o")
         else:
             self.client = None
             self.use_mock = True
@@ -28,7 +30,10 @@ class AIService:
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
-                messages=[{"role": "user", "content": prompt}],
+                messages=[
+                    {"role": "system", "content": "You are an expert educational assessment designer. Generate high-quality, accurate educational content in proper JSON format."},
+                    {"role": "user", "content": prompt}
+                ],
                 temperature=temperature or self.temperature,
                 max_tokens=self.max_tokens
             )
@@ -39,28 +44,55 @@ class AIService:
 
     def generate_assessment_domains(self, main_topic: str, num_domains: int) -> List[AssessmentDomain]:
         prompt = f"""# Role and Objective
-You are an expert knowledge assessor. Your task is to break down a subject into {num_domains} distinct knowledge domains for comprehensive assessment. Focus on identifying core areas that would reveal someone's true understanding and competency level. Your response must be a pure JSON array.
+
+You are an expert knowledge assessor and educational designer. Your task is to break down a subject into {num_domains} distinct knowledge domains for comprehensive assessment. Focus on creating a logical learning progression that reveals someone's true understanding and competency level. Your response must be a pure JSON array.
+
 
 1. `mainTopic` (string): {main_topic}
+
 2. `numDomains` (number): {num_domains}
 
-1. Analyze the `mainTopic` from an assessment perspective.
-2. Identify the core knowledge domains that define expertise in this area.
-3. Arrange these domains to cover the breadth and depth of the subject.
-4. For each domain, provide a name and description focused on what knowledge/skills will be assessed.
-5. Estimate the relative difficulty of each domain (1-100 scale).
+
+1. Analyze the `mainTopic` from both assessment and learning progression perspectives.
+
+2. Identify the core knowledge domains that define expertise in this area, arranged from foundational to advanced.
+
+3. Create domains that build upon each other logically (prerequisites → applications → mastery).
+
+4. For each domain, provide a clear English name and detailed description focused on what knowledge/skills will be assessed.
+
+5. Estimate the relative difficulty of each domain (1-100 scale), ensuring a good distribution.
+
+
+- Start with foundational concepts (difficulty 20-40)
+- Progress to application and analysis (difficulty 40-70) 
+- End with synthesis and evaluation (difficulty 70-90)
+- Each domain should have 8-12 questions for thorough assessment
+- Focus on practical, real-world applications where possible
+
 
 [
+
   {{
-    "domain_name": "Domain 1 Name (e.g., 'Fundamental Concepts')",
-    "description": "What knowledge/skills this domain assesses (e.g., 'Assesses understanding of core principles and basic terminology.')",
-    "estimated_difficulty": 30
+
+    "domain_name": "Fundamental Concepts and Principles",
+
+    "description": "Assesses understanding of core concepts, basic terminology, and foundational principles that form the basis for advanced learning.",
+
+    "estimated_difficulty": 25
+
   }},
+
   {{
-    "domain_name": "Domain 2 Name (e.g., 'Applied Problem Solving')",
-    "description": "What knowledge/skills this domain assesses (e.g., 'Evaluates ability to apply concepts to solve real-world problems.')",
-    "estimated_difficulty": 70
+
+    "domain_name": "Practical Application and Problem Solving",
+
+    "description": "Evaluates the ability to apply theoretical knowledge to real-world scenarios and solve specific problems.",
+
+    "estimated_difficulty": 65
+
   }}
+
 ]"""
 
         try:
@@ -88,38 +120,70 @@ You are an expert knowledge assessor. Your task is to break down a subject into 
         gaps_str = json.dumps(knowledge_gaps) if knowledge_gaps else "[]"
         
         prompt = f"""# Role and Objective
-You are an expert assessment designer. Your task is to create a high-quality multiple-choice question that accurately measures knowledge in a specific domain at a precise difficulty level. Your response must be a pure JSON object.
+
+You are an expert assessment designer and educational psychologist. Your task is to create a high-quality, engaging multiple-choice question that accurately measures knowledge in a specific domain at a precise difficulty level. Focus on creating questions that are both challenging and fair. Your response must be a pure JSON object.
+
 
 1. `domain` (string): {domain}
+
 2. `difficulty` (number): {difficulty} (1-100 scale, where 1=very basic, 100=expert level)
+
 3. `knowledgeGaps` (array): {gaps_str}
 
-1. Create a question that precisely matches the difficulty level (not too easy, not too hard).
-2. If `knowledgeGaps` is provided, focus on assessing those specific areas.
-3. Design 4-5 options with exactly one correct answer.
-4. Include plausible distractors that reveal common misconceptions.
-5. Provide a knowledge tag and clear explanation.
-6. Estimate the time a knowledgeable person would need to answer.
 
-- 1-20: Basic definitions and simple recall
-- 21-40: Understanding and simple application
-- 41-60: Analysis and moderate application
-- 61-80: Synthesis and complex problem-solving
-- 81-100: Expert-level evaluation and advanced concepts
+1. Create a question that precisely matches the difficulty level and is engaging to answer.
+
+2. If `knowledgeGaps` is provided, prioritize assessing those specific areas to help the learner improve.
+
+3. Design 4 options with exactly one correct answer and three carefully crafted distractors.
+
+4. Include plausible distractors that reveal common misconceptions or partial understanding.
+
+5. Provide a specific knowledge tag and comprehensive explanation with learning tips.
+
+6. Estimate realistic time needed based on question complexity.
+
+
+- Use clear, unambiguous English language
+- Avoid trick questions or overly complex wording
+- Include real-world context when possible
+- Make distractors educational (reveal common mistakes)
+- Provide explanations that teach, not just correct
+
+
+- 1-20: Basic definitions, simple recall, fundamental concepts
+- 21-40: Understanding relationships, simple application, basic analysis
+- 41-60: Moderate application, comparison, pattern recognition
+- 61-80: Complex synthesis, multi-step problem solving, evaluation
+- 81-100: Expert-level analysis, advanced synthesis, cutting-edge concepts
+
 
 {{
+
   "question": "Clear, precise question text that tests the intended knowledge",
+
   "options": [
-    "Option A - plausible but incorrect",
-    "Option B - correct answer",
-    "Option C - plausible but incorrect",
-    "Option D - plausible but incorrect"
+
+    "Option A - plausible but incorrect answer",
+
+    "Option B - correct answer", 
+
+    "Option C - common misconception answer",
+
+    "Option D - partially correct but incomplete answer"
+
   ],
+
   "correct_answer_index": 1,
-  "knowledge_tag": "Specific knowledge area being tested",
-  "explanation": "Clear explanation of why the correct answer is right and why others are wrong",
+
+  "knowledge_tag": "Specific knowledge area label",
+
+  "explanation": "Detailed explanation of why the correct answer is right, why other options are wrong, and relevant learning points and recommendations.",
+
   "difficulty_level": {difficulty},
-  "estimated_time": 30
+
+  "estimated_time": 45
+
 }}"""
 
         if self.use_mock or self.client is None:
@@ -166,48 +230,95 @@ You are an expert assessment designer. Your task is to create a high-quality mul
             "confidence_score": da.confidence_score
         } for da in domain_assessments])
 
+        weakness_summary = []
+        for da in domain_assessments:
+            accuracy = da.questions_correct / da.questions_attempted if da.questions_attempted > 0 else 0.0
+            if accuracy < 0.7 and da.knowledge_gaps:
+                weakness_summary.extend(da.knowledge_gaps)
+
         prompt = f"""# Role and Objective
-You are an expert knowledge assessor and analyst. Your task is to analyze a user's performance across multiple knowledge domains and generate a comprehensive assessment report. Your response must be a pure JSON object.
+
+You are an expert knowledge assessor and analyst. Your task is to analyze a user's performance across multiple knowledge domains and generate a comprehensive assessment report with AI-generated weakness summaries. Your response must be a pure JSON object.
+
 
 1. `mainTopic` (string): {main_topic}
+
 2. `assessmentData` (array): {assessment_str}
+
 3. `totalTimeMinutes` (number): {round(total_time / 60, 1)}
+
 4. `overallAccuracy` (number): {round(overall_accuracy, 2)}
 
+5. `weaknessAreas` (array): {weakness_summary}
+
+
 1. Determine the user's overall knowledge level (Beginner/Intermediate/Advanced/Expert).
+
 2. Identify their strongest domains and specific mastery areas.
-3. Identify areas needing improvement and specific knowledge gaps.
-4. Provide actionable recommendations for further development.
-5. Create a detailed breakdown of performance by domain.
+
+3. Generate AI-powered weakness summaries based on knowledge gaps and poor performance areas.
+
+4. Provide actionable recommendations for addressing weaknesses and further development.
+
+5. Create a detailed breakdown of performance by domain with specific improvement strategies.
+
 
 - Beginner (0-40% accuracy): Basic understanding, needs foundational work
 - Intermediate (41-70% accuracy): Solid grasp of fundamentals, ready for application
 - Advanced (71-85% accuracy): Strong competency, can handle complex scenarios
 - Expert (86-100% accuracy): Mastery level, can teach and innovate
 
+
 {{
+
   "title": "Knowledge Assessment Report: {main_topic}",
+
   "overall_score": {round(overall_accuracy * 100, 1)},
+
   "total_time_minutes": {round(total_time / 60, 1)},
+
   "domains_assessed": {len(domain_assessments)},
+
   "knowledge_level": "Determine based on overall performance",
+
   "strengths": [
+
     "List specific domains and knowledge areas where user excelled"
+
   ],
+
+  "weakness_summary": "AI-generated comprehensive analysis of the user's main weaknesses, learning gaps, and areas requiring focused attention based on their performance patterns",
+
   "areas_for_improvement": [
+
     "List specific domains and knowledge gaps that need attention"
+
   ],
+
   "recommendations": [
-    "Provide 3-5 specific, actionable recommendations for improvement"
+
+    "Provide 3-5 specific, actionable recommendations for improvement with learning resources"
+
   ],
+
   "detailed_breakdown": {{
+
     "domain_name_1": {{
+
       "score": 85.5,
+
       "status": "mastered",
+
       "key_strengths": ["specific strength 1", "specific strength 2"],
-      "improvement_areas": ["specific gap 1"]
+
+      "improvement_areas": ["specific gap 1"],
+
+      "learning_strategy": "Specific strategy for this domain"
+
     }}
+
   }}
+
 }}"""
 
         try:

@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { Slider } from '@/components/ui/slider'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Badge } from '@/components/ui/badge'
@@ -34,10 +33,11 @@ export default function AssessmentInProgress() {
   const [selectedDomain, setSelectedDomain] = useState<number | null>(null)
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
   const [selectedAnswer, setSelectedAnswer] = useState<string>('')
-  const [confidence, setConfidence] = useState([50])
   const [progress, setProgress] = useState(0)
   const [domains, setDomains] = useState<Domain[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [feedback, setFeedback] = useState<string>('')
+  const [showFeedback, setShowFeedback] = useState(false)
 
   useEffect(() => {
     const assessmentData = location.state?.assessmentData
@@ -64,7 +64,6 @@ export default function AssessmentInProgress() {
         setCurrentQuestion(data.question)
         setSelectedDomain(domainIndex)
         setSelectedAnswer('')
-        setConfidence([50])
       }
     } catch (error) {
       console.error('Error starting domain:', error)
@@ -85,7 +84,7 @@ export default function AssessmentInProgress() {
         },
         body: JSON.stringify({
           answer_index: parseInt(selectedAnswer),
-          confidence: confidence[0] / 100
+          confidence: 0.5
         }),
       })
 
@@ -93,12 +92,36 @@ export default function AssessmentInProgress() {
         const data = await response.json()
         setProgress(data.progress || 0)
         
-        if (data.completed) {
-          navigate('/summary')
+        if (data.feedback) {
+          setFeedback(data.feedback)
+          setShowFeedback(true)
+          
+          setTimeout(() => {
+            setShowFeedback(false)
+          }, 5000)
+        }
+        
+        if (data.domain_complete) {
+          const updatedDomains = [...domains]
+          if (selectedDomain !== null) {
+            updatedDomains[selectedDomain].status = 'completed'
+            setDomains(updatedDomains)
+          }
+          
+          setCurrentQuestion(null)
+          setSelectedDomain(null)
+          setSelectedAnswer('')
+          
+          const allCompleted = updatedDomains.every(domain => 
+            domain.status === 'completed' || domain.status === 'mastered'
+          )
+          
+          if (allCompleted) {
+            navigate('/summary')
+          }
         } else if (data.question) {
           setCurrentQuestion(data.question)
           setSelectedAnswer('')
-          setConfidence([50])
         }
       }
     } catch (error) {
@@ -184,7 +207,10 @@ export default function AssessmentInProgress() {
             <CardContent className="space-y-6">
               <div>
                 <h3 className="text-lg font-medium mb-4">{currentQuestion.question}</h3>
-                <RadioGroup value={selectedAnswer} onValueChange={setSelectedAnswer}>
+                <RadioGroup value={selectedAnswer} onValueChange={(value) => {
+                  console.log('RadioGroup value changed:', value);
+                  setSelectedAnswer(value);
+                }}>
                   {currentQuestion.options.map((option, index) => (
                     <div key={index} className="flex items-center space-x-2 p-3 rounded-lg hover:bg-gray-50">
                       <RadioGroupItem value={index.toString()} id={`option-${index}`} />
@@ -196,22 +222,16 @@ export default function AssessmentInProgress() {
                 </RadioGroup>
               </div>
 
-              <div className="space-y-4">
-                <Label className="text-sm font-medium">
-                  Confidence Level: {confidence[0]}%
-                </Label>
-                <Slider
-                  value={confidence}
-                  onValueChange={setConfidence}
-                  max={100}
-                  min={0}
-                  step={10}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span>Not confident</span>
-                  <span>Very confident</span>
+              {showFeedback && (
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="text-sm text-blue-800 whitespace-pre-line">
+                    {feedback}
+                  </div>
                 </div>
+              )}
+              
+              <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                <p>💡 <strong>System Auto-Assessment:</strong> Confidence values, response time, and accuracy are automatically calculated by the system based on your performance to generate personalized learning recommendations.</p>
               </div>
 
               <Button
