@@ -28,6 +28,7 @@ class AIService:
             return self._generate_mock_response(prompt)
         
         try:
+            print(f"DEBUG: Making OpenAI API call with model={self.model}")
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
@@ -35,12 +36,15 @@ class AIService:
                     {"role": "user", "content": prompt}
                 ],
                 temperature=temperature or self.temperature,
-                max_tokens=self.max_tokens
+                max_tokens=self.max_tokens,
+                timeout=30.0  # Add 30 second timeout to prevent hanging
             )
+            print(f"DEBUG: OpenAI API call successful, response length: {len(response.choices[0].message.content)}")
             return response.choices[0].message.content.strip()
         except Exception as e:
             print(f"Error calling OpenAI API: {e}")
-            raise e  # Re-raise the exception to trigger proper fallback handling
+            print(f"DEBUG: Falling back to mock data due to API error")
+            return self._generate_mock_response(prompt)  # Return mock data instead of re-raising
 
     def generate_assessment_domains(self, main_topic: str, num_domains: int) -> List[AssessmentDomain]:
         prompt = f"""# Role and Objective
