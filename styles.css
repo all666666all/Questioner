@@ -1,0 +1,675 @@
+/* Knowledge Assessment Tool - iOS Design System */
+
+/* CSS Variables for iOS Design System */
+:root {
+    /* iOS Colors */
+    --ios-blue: #007AFF;
+    --ios-blue-light: #5AC8FA;
+    --ios-green: #34C759;
+    --ios-orange: #FF9500;
+    --ios-red: #FF3B30;
+    --ios-purple: #AF52DE;
+    --ios-gray: #8E8E93;
+    --ios-gray-light: #F2F2F7;
+    --ios-gray-dark: #1C1C1E;
+
+    /* Background Colors */
+    --bg-primary: #F2F2F7;
+    --bg-secondary: #FFFFFF;
+    --bg-tertiary: #F8F9FA;
+    --bg-card: rgba(255, 255, 255, 0.8);
+
+    /* Text Colors */
+    --text-primary: #1C1C1E;
+    --text-secondary: #3A3A3C;
+    --text-tertiary: #8E8E93;
+
+    /* Spacing (iOS 8pt grid system) */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-xxl: 48px;
+
+    /* Border Radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+    /* Typography */
+    --font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+    --font-size-xs: 12px;
+    --font-size-sm: 14px;
+    --font-size-md: 16px;
+    --font-size-lg: 18px;
+    --font-size-xl: 24px;
+    --font-size-xxl: 32px;
+
+    /* Transitions */
+    --transition-fast: 0.2s ease-out;
+    --transition-normal: 0.3s ease-out;
+    --transition-slow: 0.5s ease-out;
+}
+
+/* Global Styles */
+* {
+    box-sizing: border-box;
+}
+
+body, .gradio-container {
+    font-family: var(--font-family) !important;
+    background: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Container Styles */
+.gradio-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-md);
+}
+
+/* Header Styles */
+.main-header {
+    text-align: center;
+    padding: var(--spacing-xxl) var(--spacing-lg);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-xl);
+    margin-bottom: var(--spacing-xl);
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.main-header h1 {
+    color: var(--text-primary);
+    font-size: var(--font-size-xxl);
+    font-weight: 700;
+    margin-bottom: var(--spacing-sm);
+    letter-spacing: -0.5px;
+}
+
+.main-header p {
+    color: var(--text-secondary);
+    font-size: var(--font-size-lg);
+    font-weight: 400;
+    margin: 0;
+}
+
+/* Card Styles */
+.assessment-card, .level-card {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    margin: var(--spacing-md) 0;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+.assessment-card:hover, .level-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.assessment-card.active, .level-card.active {
+    border-color: var(--ios-blue);
+    box-shadow: 0 0 0 1px var(--ios-blue), var(--shadow-md);
+}
+
+.level-card.locked, .assessment-card.locked {
+    background: var(--bg-tertiary);
+    opacity: 0.6;
+    cursor: not-allowed !important;
+}
+
+.level-card.passed, .assessment-card.completed {
+    border-color: var(--ios-green);
+    background: rgba(52, 199, 89, 0.05);
+}
+
+.level-card.failed, .assessment-card.struggling {
+    border-color: var(--ios-red);
+    background: rgba(255, 59, 48, 0.05);
+}
+
+.level-card.current, .assessment-card.current {
+    border-color: var(--ios-blue);
+    background: rgba(0, 122, 255, 0.05);
+    box-shadow: 0 0 0 1px var(--ios-blue), var(--shadow-lg);
+}
+
+.assessment-card.not-started {
+    border-color: var(--ios-gray);
+    background: var(--bg-secondary);
+    cursor: pointer;
+}
+
+.assessment-card.not-started:hover {
+    border-color: var(--ios-blue);
+    background: rgba(0, 122, 255, 0.02);
+}
+
+.assessment-card.in-progress {
+    border-color: var(--ios-orange);
+    background: rgba(255, 149, 0, 0.05);
+    cursor: pointer;
+}
+
+.assessment-card.mastered {
+    border-color: var(--ios-purple);
+    background: rgba(175, 82, 222, 0.05);
+}
+
+.assessment-card.locked:hover {
+    transform: none !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+/* Gamification Animations */
+.assessment-card.recently-unlocked {
+    animation: unlockPulse 2s ease-in-out;
+}
+
+@keyframes unlockPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 122, 255, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(0, 122, 255, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 122, 255, 0);
+    }
+}
+
+/* Level progression visual enhancements */
+.domains-container {
+    position: relative;
+}
+
+.assessment-card {
+    position: relative;
+    margin: var(--spacing-lg) 0;
+}
+
+/* Hover effects for clickable domains */
+.assessment-card[data-clickable="True"]:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--ios-blue);
+}
+
+.assessment-card[data-clickable="True"]:active {
+    transform: translateY(-2px) scale(1.01);
+    transition: all 0.1s ease;
+}
+
+/* iOS Button Styles */
+.ios-button, button, .gr-button {
+    background: var(--ios-blue) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: var(--radius-md) !important;
+    padding: var(--spacing-md) var(--spacing-lg) !important;
+    font-family: var(--font-family) !important;
+    font-size: var(--font-size-md) !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all var(--transition-fast) !important;
+    box-shadow: var(--shadow-sm) !important;
+    min-height: 44px !important; /* iOS minimum touch target */
+}
+
+.ios-button:hover, button:hover, .gr-button:hover {
+    background: #0056CC !important;
+    transform: translateY(-1px) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+.ios-button:active, button:active, .gr-button:active {
+    transform: translateY(0) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.ios-button.secondary {
+    background: var(--bg-secondary) !important;
+    color: var(--ios-blue) !important;
+    border: 1px solid var(--ios-blue) !important;
+}
+
+.ios-button.destructive {
+    background: var(--ios-red) !important;
+}
+
+/* iOS Input Styles */
+.ios-input, input, textarea, .gr-textbox input, .gr-textbox textarea {
+    background: var(--bg-secondary) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: var(--radius-md) !important;
+    padding: var(--spacing-md) !important;
+    font-family: var(--font-family) !important;
+    font-size: var(--font-size-md) !important;
+    color: var(--text-primary) !important;
+    transition: all var(--transition-fast) !important;
+    min-height: 44px !important;
+}
+
+.ios-input:focus, input:focus, textarea:focus, .gr-textbox input:focus, .gr-textbox textarea:focus {
+    border-color: var(--ios-blue) !important;
+    box-shadow: 0 0 0 1px var(--ios-blue) !important;
+    outline: none !important;
+}
+
+/* Progress Bar Styles */
+.progress-container {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    margin: var(--spacing-md) 0;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: var(--ios-gray-light);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: var(--spacing-sm) 0;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--ios-blue);
+    border-radius: 4px;
+    transition: width var(--transition-slow);
+    position: relative;
+}
+
+.progress-fill.success {
+    background: var(--ios-green);
+}
+
+.progress-fill.warning {
+    background: var(--ios-orange);
+}
+
+.progress-fill.error {
+    background: var(--ios-red);
+}
+
+/* Question Card Styles */
+.question-card {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    margin: var(--spacing-md) 0;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    position: relative;
+}
+
+.question-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--ios-blue);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.question-text {
+    font-size: var(--font-size-lg);
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-lg);
+    line-height: 1.6;
+    font-weight: 500;
+}
+
+/* Option Button Styles */
+.option-button {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-lg);
+    margin: var(--spacing-sm) 0;
+    background: var(--bg-secondary);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-md);
+    text-align: left;
+    font-size: var(--font-size-md);
+    font-family: var(--font-family);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+    min-height: 44px;
+}
+
+.option-button:hover {
+    border-color: var(--ios-blue);
+    background: rgba(0, 122, 255, 0.05);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.option-button.selected {
+    border-color: var(--ios-blue);
+    background: rgba(0, 122, 255, 0.1);
+    color: var(--ios-blue);
+    font-weight: 600;
+}
+
+.option-button.correct {
+    border-color: var(--ios-green);
+    background: rgba(52, 199, 89, 0.1);
+    color: var(--ios-green);
+}
+
+.option-button.incorrect {
+    border-color: var(--ios-red);
+    background: rgba(255, 59, 48, 0.1);
+    color: var(--ios-red);
+}
+
+/* Status Badge Styles */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-xl);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid transparent;
+}
+
+.status-badge.unlocked {
+    background: rgba(0, 122, 255, 0.1);
+    color: var(--ios-blue);
+    border-color: var(--ios-blue);
+}
+
+.status-badge.passed {
+    background: rgba(52, 199, 89, 0.1);
+    color: var(--ios-green);
+    border-color: var(--ios-green);
+}
+
+.status-badge.failed {
+    background: rgba(255, 59, 48, 0.1);
+    color: var(--ios-red);
+    border-color: var(--ios-red);
+}
+
+.status-badge.locked {
+    background: rgba(142, 142, 147, 0.1);
+    color: var(--ios-gray);
+    border-color: var(--ios-gray);
+}
+
+.status-badge.not_started {
+    background: rgba(142, 142, 147, 0.1);
+    color: var(--ios-gray);
+    border-color: var(--ios-gray);
+}
+
+.status-badge.in_progress {
+    background: rgba(255, 149, 0, 0.1);
+    color: var(--ios-orange);
+    border-color: var(--ios-orange);
+}
+
+.status-badge.completed {
+    background: rgba(52, 199, 89, 0.1);
+    color: var(--ios-green);
+    border-color: var(--ios-green);
+}
+
+.status-badge.mastered {
+    background: rgba(175, 82, 222, 0.1);
+    color: var(--ios-purple);
+    border-color: var(--ios-purple);
+}
+
+.status-badge.struggling {
+    background: rgba(255, 59, 48, 0.1);
+    color: var(--ios-red);
+    border-color: var(--ios-red);
+}
+
+/* Button Styles */
+.primary-button {
+    background: linear-gradient(45deg, #2196F3, #21CBF3);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 25px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+}
+
+.primary-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+}
+
+.secondary-button {
+    background: white;
+    color: #2196F3;
+    border: 2px solid #2196F3;
+    padding: 0.8rem 1.5rem;
+    border-radius: 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.secondary-button:hover {
+    background: #2196F3;
+    color: white;
+}
+
+/* Stats Display */
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2196F3;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* iOS-Style Responsive Design */
+@media (max-width: 768px) {
+    .gradio-container {
+        padding: var(--spacing-sm);
+    }
+
+    .main-header {
+        padding: var(--spacing-lg);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .main-header h1 {
+        font-size: var(--font-size-xl);
+    }
+
+    .main-header p {
+        font-size: var(--font-size-md);
+    }
+
+    .assessment-card, .level-card {
+        padding: var(--spacing-md);
+        margin: var(--spacing-sm) 0;
+    }
+
+    .ios-button, button, .gr-button {
+        width: 100%;
+        margin: var(--spacing-xs) 0;
+    }
+
+    .stats-container {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
+
+    .question-text {
+        font-size: var(--font-size-md);
+    }
+}
+
+@media (max-width: 480px) {
+    .gradio-container {
+        padding: var(--spacing-xs);
+    }
+
+    .main-header {
+        padding: var(--spacing-md);
+    }
+
+    .main-header h1 {
+        font-size: var(--font-size-lg);
+    }
+
+    .assessment-card, .level-card {
+        padding: var(--spacing-sm);
+    }
+}
+
+/* Summary Display Styles */
+.summary-container {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    margin: var(--spacing-md) 0;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.summary-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--spacing-md);
+    margin: var(--spacing-lg) 0;
+}
+
+.summary-section {
+    margin: var(--spacing-lg) 0;
+}
+
+.summary-section h3 {
+    color: var(--text-primary);
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+    border-bottom: 2px solid var(--ios-blue);
+    padding-bottom: var(--spacing-sm);
+}
+
+.summary-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.summary-section li {
+    background: var(--bg-tertiary);
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin: var(--spacing-xs) 0;
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--ios-blue);
+}
+
+/* Stats Container Styles */
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--spacing-md);
+    margin: var(--spacing-md) 0;
+}
+
+.stat-card {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all var(--transition-fast);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.stat-value {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--ios-blue);
+    margin-bottom: var(--spacing-xs);
+}
+
+.stat-label {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    font-weight: 500;
+}
