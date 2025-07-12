@@ -16,15 +16,38 @@ def check_python_version():
     return True
 
 def install_dependencies():
-    """Install required dependencies"""
+    """Install required dependencies using uv or venv"""
     print("\n📦 Installing dependencies...")
+    
+    # First try uv sync
     try:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
-        print("✅ Dependencies installed successfully")
+        subprocess.check_call(["uv", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        print("✅ uv found, using uv sync...")
+        subprocess.check_call(["uv", "sync"])
+        print("✅ Dependencies installed successfully with uv")
         return True
-    except subprocess.CalledProcessError as e:
-        print(f"❌ Failed to install dependencies: {e}")
-        return False
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        print("⚠️  uv not found, creating virtual environment...")
+        
+        # Create virtual environment if it doesn't exist
+        if not os.path.exists("venv"):
+            try:
+                subprocess.check_call([sys.executable, "-m", "venv", "venv"])
+                print("✅ Virtual environment created")
+            except subprocess.CalledProcessError as e:
+                print(f"❌ Failed to create virtual environment: {e}")
+                return False
+        
+        # Install dependencies in virtual environment
+        venv_pip = os.path.join("venv", "bin", "pip") if os.name != "nt" else os.path.join("venv", "Scripts", "pip.exe")
+        try:
+            subprocess.check_call([venv_pip, "install", "-r", "requirements.txt"])
+            print("✅ Dependencies installed successfully in virtual environment")
+            print("💡 To activate the virtual environment, run: source venv/bin/activate")
+            return True
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Failed to install dependencies: {e}")
+            return False
 
 def setup_environment():
     """Set up environment file"""
@@ -103,11 +126,17 @@ def main():
         print("4. Open http://localhost:7860 in your browser")
     else:
         print("❌ Setup failed. Please check the errors above.")
-        print("\n🔧 Manual setup:")
-        print("1. Ensure Python 3.8+ is installed")
-        print("2. Run: pip install -r requirements.txt")
-        print("3. Copy .env.example to .env")
-        print("4. Add your OpenAI API key to .env")
+        print("\n🔧 Manual setup options:")
+        print("Option 1 - Using uv (recommended):")
+        print("1. Install uv: curl -LsSf https://astral.sh/uv/install.sh | sh")
+        print("2. Run: uv sync")
+        print("\nOption 2 - Using virtual environment:")
+        print("1. Create venv: python3 -m venv venv")
+        print("2. Activate: source venv/bin/activate")
+        print("3. Install: pip install -r requirements.txt")
+        print("\nThen:")
+        print("4. Copy .env.example to .env")
+        print("5. Add your OpenAI API key to .env")
 
 if __name__ == "__main__":
     main()

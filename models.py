@@ -13,9 +13,20 @@ class DomainStatus(str, Enum):
     MASTERED = "mastered"
     STRUGGLING = "struggling"
 
+class LevelStatus(str, Enum):
+    LOCKED = "locked"
+    UNLOCKED = "unlocked"
+    PASSED = "passed"
+    FAILED = "failed"
+
 class AssessmentDomain(BaseModel):
     domain_name: str = Field(..., description="Name of the knowledge domain")
     description: str = Field(..., description="Brief description of what this domain covers")
+    estimated_difficulty: int = Field(50, description="Estimated difficulty level (1-100)")
+
+class Level(BaseModel):
+    level_name: str = Field(..., description="Name of the learning level")
+    description: str = Field(..., description="Description of what this level covers")
     estimated_difficulty: int = Field(50, description="Estimated difficulty level (1-100)")
 
 class Question(BaseModel):
@@ -56,6 +67,43 @@ class AssessmentSession(BaseModel):
     start_time: float = Field(default_factory=time.time)
     total_questions: int = 0
     total_correct: int = 0
+
+class LearningSession(BaseModel):
+    main_topic: str
+    level_list: List[Level] = Field(default_factory=list)
+    current_level_index: int = 0
+    level_statuses: List[LevelStatus] = Field(default_factory=list)
+    history: List['LevelReport'] = Field(default_factory=list)
+    start_time: float = Field(default_factory=time.time)
+
+class QuestionSession(BaseModel):
+    level_name: str
+    progress: int = 0  # Progress percentage (0-100)
+    difficulty: int = 50
+    questions_attempted: int = 0
+    questions_correct: int = 0
+    weakness_tags: List[str] = Field(default_factory=list)
+    start_time: float = Field(default_factory=time.time)
+
+class LevelReport(BaseModel):
+    level_name: str
+    final_status: LevelStatus
+    weakness_tags: List[str] = Field(default_factory=list)
+    questions_attempted: int = 0
+    questions_correct: int = 0
+    final_difficulty: int = 50
+    completion_time: float = Field(default_factory=time.time)
+
+class LearningSummary(BaseModel):
+    title: str
+    overall_score: float
+    total_time_minutes: float
+    levels_completed: int
+    strengths: List[str]
+    areas_for_improvement: List[str]
+    learning_level: str  # "Beginner", "Intermediate", "Advanced", "Expert"
+    recommendations: List[str]
+    detailed_breakdown: Dict[str, Dict[str, Any]]
 
 class AdaptiveDifficultyEngine(BaseModel):
     current_difficulty: int = 50
