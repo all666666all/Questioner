@@ -624,7 +624,7 @@ if __name__ == "__main__":
         interface = create_interface()
         interface.launch(
             server_name="127.0.0.1",
-            server_port=9999,
+            server_port=9988,
             share=False,
             debug=True
         )
