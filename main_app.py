@@ -214,7 +214,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173", 
         "http://localhost:3000",
-        "https://adaptive-testing-app-7gxwwv7m.devinapps.com",
+        "https://assessment-fix-app-gmztnrwd.devinapps.com",
         "https://app-eyhhqswk.fly.dev"
     ],
     allow_credentials=True,
